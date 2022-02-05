@@ -6,17 +6,20 @@ import (
 	"time"
 )
 
+const RUNNERS = 4
+const MIN_TIME = 5
+
 func main() {
 	runnerChan := make(chan int, 1)
 	timeChan := make(chan int)
 	endChan := make(chan bool)
 
-	fmt.Printf("- - RACE STARTED - - \n\n")
-
-	go runner(1, runnerChan, timeChan, endChan)
-
 	finished := false
 	totalTime := 0
+
+	fmt.Printf("\n--- RACE STARTED ---\n\n")
+
+	go runner(1, runnerChan, timeChan, endChan)
 
 	for !finished {
 		select {
@@ -28,7 +31,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf("- - RACE ENDED - - \n")
+	fmt.Printf("--- RACE ENDED ---\n\n")
 
 	fmt.Printf("Duration: %ds\n", totalTime)
 }
@@ -36,17 +39,17 @@ func main() {
 func runner(order int, runnerChan chan int, timeChan chan<- int, endChan chan<- bool) {
 	seed := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(seed)
-	duration := random.Intn(5) + 5 //duração da corrida
+	duration := random.Intn(MIN_TIME) + MIN_TIME //duração da corrida
 
 	fmt.Printf("Runner %d is starting \n", order)
 	time.Sleep(time.Second * time.Duration(duration))
 	fmt.Printf("Runner %d finished after %ds \n\n", order, duration)
 
-	runnerChan <- order + 1
 	timeChan <- duration
 
-	if order == 4 {
-		fmt.Println("")
+	if order == RUNNERS {
 		endChan <- true
+	} else {
+		runnerChan <- order + 1
 	}
 }
